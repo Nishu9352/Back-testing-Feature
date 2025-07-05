@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Backtesting Simulator</title>
+<style>
+    body {
+  font-family: Arial, sans-serif;
+  margin: 150px;
+  margin-bottom: 200px;
+}
+
+h1{
+  color: chocolate;
+}
+
+h2{
+  color: rgb(35, 125, 125);
+}
+
+#backtestBtn{
+  color: rgb(195, 17, 20);
+  background-color: rgb(132, 193, 195);
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+ul li {
+  margin-bottom: 5px;
+  padding: 5px;
+  background: #77aaa9cb;
+  border-radius: 4px;
+}
+
+</style>
+
+</head>
+<body>
+<h1>Backtesting</h1>
+<button id="backtestBtn">Start Backtesting</button>
+
+<h2>Performance</h2>
+<ul id="trades"></ul>
+<p>Total Profit/Loss: <span id="total"></span></p>
+
+<script>
+  
+function generatePriceData(days = 30) {
+  let prices = [100];
+  for (let i = 1; i <= days; i++) {
+    
+    let change = (Math.random() * 0.1 - 0.05);
+    prices.push(prices[prices.length - 1] * (1 + change)); 
+  }
+  return prices;
+}
+
+function backtest(prices) {
+  let trades = []; 
+  let holdings = 0;
+  let buyPrice = 0;
+  let total = 0;
+
+  for (let i = 0; i < prices.length; i++) {
+    let price = prices[i];
+    
+    if (price < 100 && holdings === 0) {
+      holdings = 1;
+      buyPrice = price;
+      trades.push({action:'Buy', price, day: i}); 
+    }
+    
+    else if (price > 105 && holdings === 1) {
+      holdings = 0;
+      let Profit = price - buyPrice;
+      total += Profit;
+      trades.push({action:'Sell', price, day: i, Profit}); 
+    }
+  }
+  return {trades, total};
+
+}
+
+document.getElementById('backtestBtn').addEventListener('click', () => {
+  const prices = generatePriceData(30);
+  const {trades, total} = backtest(prices);
+  
+  const ul = document.getElementById('trades');
+  ul.innerHTML = '';
+  
+  trades.forEach(trade => {
+    let li = document.createElement('li');
+    if (trade.action==='Buy') {
+      li.textContent = `Day ${trade.day} - Bought at $${trade.price.toFixed(2)}`;
+
+    } else {
+      li.textContent = `Day ${trade.day} - Sold at $${trade.price.toFixed(2)} | Profit: $${trade.Profit.toFixed(2)}`;
+
+    }
+    ul.prepend(li);
+  });
+
+  document.getElementById('total').innerText = `$${total.toFixed(2)}`;
+
+});
+
+</script>
+</body>
+</html>
